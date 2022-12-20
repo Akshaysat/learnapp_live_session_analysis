@@ -7,14 +7,14 @@ import plotly.express as px
 import time
 
 
-@st.cache
+# @st.cache
 def get_token():
 
     url = "https://zoom.us/oauth/token?grant_type=account_credentials&account_id=QpgI8qwKRWqoMLsq86U9Hg"
 
     payload = {}
     headers = {
-        "Authorization": "Basic UEs4NTNsTFNUN0sxZ3dReTd1eG9nOnd2Sm5SQlNvVHE4YzJoOGpwcllnazUxR25qWWFOYWZs",
+        "Authorization": f"Basic {st.secrets['token']['auth_token']}",
         "Cookie": "TS018dd1ba=01663b36a1194991630163c56912969935698aaa2a33a0ee810ddcbecd646f5daea83bc555efd8890887730b40a24318028fc17f69; TS01f92dc5=01663b36a1b9a96cea77eb07d086d4137aa7b3e04566e40df3ea74bf203e8ade5fb0b1d4fe150c401444f59e360bfdd5b790169011; __cf_bm=mo2H9ar6h_d4uYsC9SDos7T3oSGeFzHUtWzOcaUalts-1671459548-0-AWbHafN6vZP/f0CUp9OXwgORVCAfZfAgQLTFayb3Flkt0irphltu2LTiGfjd9GfsHUiPwT/D2l3/JIMWj8m8xzA=; _zm_chtaid=275; _zm_ctaid=zJCcWkV-TNGHo2TjyVh44w.1671459858576.d5d43daf7e700fdd1d000921698c1378; _zm_mtk_guid=5b4d4a664cc540dfa8f5b1f5997e7178; _zm_page_auth=us06_c_9x4NQ_P1TTWy00RFJkju0g; _zm_ssid=us06_c_4MhVHnsYTR-tKK8Xlh9WfA; cred=0D856E9DC672A09B750A7D1D25E50BFE",
     }
 
