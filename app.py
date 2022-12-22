@@ -121,4 +121,23 @@ if st.button("Analyze Live Session"):
 
         st.write("------")
         st.subheader("User Data")
-        st.dataframe(df[["name", "user_email", "join_time", "leave_time", "duration"]])
+        df_user_data = df[["name", "user_email", "join_time", "leave_time", "duration"]]
+        st.dataframe(df_user_data)
+
+        st.write("-----")
+
+        @st.cache
+        def convert_df(df_user_data):
+            # IMPORTANT: Cache the conversion to prevent computation on every rerun
+            return df.to_csv().encode("utf-8")
+
+        csv = convert_df(df_user_data)
+
+        st.download_button(
+            label="Download CSV",
+            data=csv,
+            file_name="user_data.csv",
+            mime="text/csv",
+        )
+
+        st.write("-----")
