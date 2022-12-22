@@ -129,7 +129,7 @@ if st.button("Analyze Live Session"):
         @st.cache
         def convert_df(df_user_data):
             # IMPORTANT: Cache the conversion to prevent computation on every rerun
-            return df.to_csv().encode("utf-8")
+            return df_user_data.to_csv().encode("utf-8")
 
         csv = convert_df(df_user_data)
 
