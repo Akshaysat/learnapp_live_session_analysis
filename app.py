@@ -122,6 +122,9 @@ if st.button("Analyze Live Session"):
         st.write("------")
         st.subheader("User Data")
         df_user_data = df[["name", "user_email", "join_time", "leave_time", "duration"]]
+        df_user_data["Points"] = df_user_data["duration"].apply(
+            lambda x: 100 if x >= 2700 else round(100 * x / 2700)
+        )
         st.dataframe(df_user_data)
 
         st.write("-----")
