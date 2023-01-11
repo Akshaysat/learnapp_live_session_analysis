@@ -79,7 +79,12 @@ meeting_id = st.text_input("Enter the meeting ID of the live session")
 if st.button("Analyze Live Session"):
     with st.spinner("Analyzing..."):
         df = get_attendee_data(meeting_id, token)
-        df = df.groupby("user_email", as_index=False).max()
+        st.dataframe(df)
+        # df = df.groupby("user_email", as_index=False).max()
+        df = df.groupby("user_email", as_index=False).agg(
+            {"join_time": "min", "leave_time": "max", "duration": "sum"}
+        )
+        st.dataframe(df)
 
         df["join_time_only"] = df["join_time"].apply(lambda x: x.strftime("%H:%M:%S"))
 
