@@ -73,77 +73,140 @@ st.markdown(
 
 st.write("----")
 
-# get meeting id from the user
-meeting_id = st.text_input("Enter the meeting ID of the live session")
+# Select the feature you want to use
+feature = st.radio(
+    "Select the feature that you want to use",
+    ("Live Class Analysis", "Dropped-off users"),
+)
+st.write("----")
 
-if st.button("Analyze Live Session"):
-    with st.spinner("Analyzing..."):
-        df = get_attendee_data(meeting_id, token)
-        # df = df.groupby("user_email", as_index=False).max()
-        df = df.groupby("user_email", as_index=False).agg(
-            {"join_time": "min", "leave_time": "max", "duration": "sum", "name": "max"}
-        )
+if feature == "Live Class Analysis":
+    # get meeting id from the user
+    meeting_id = st.text_input("Enter the meeting ID of the live class")
 
-        df["join_time_only"] = df["join_time"].apply(lambda x: x.strftime("%H:%M:%S"))
-
-        st.write("----")
-        st.subheader("Live Session Metrics")
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            total_users_joined = df["user_email"].unique().shape[0]
-            st.metric("Total users joined", f"{total_users_joined}")
-
-        with col2:
-            joined_before_cutoff = df[df["join_time_only"] < "09:10:00"].shape[0]
-            st.metric(
-                "Joined before 09:10 AM",
-                f"{round((joined_before_cutoff/total_users_joined)*100,1)}% ({joined_before_cutoff})",
+    if st.button("Analyze Live Session"):
+        with st.spinner("Analyzing..."):
+            df = get_attendee_data(meeting_id, token)
+            # df = df.groupby("user_email", as_index=False).max()
+            df = df.groupby("user_email", as_index=False).agg(
+                {
+                    "join_time": "min",
+                    "leave_time": "max",
+                    "duration": "sum",
+                    "name": "max",
+                }
             )
 
-        with col3:
-            ideal_duration = df[df["duration"] > 2700].shape[0]
-            st.metric(
-                "> 45 mins duration",
-                f"{round((ideal_duration/total_users_joined)*100,1)}% ({ideal_duration})",
+            df["join_time_only"] = df["join_time"].apply(
+                lambda x: x.strftime("%H:%M:%S")
             )
 
-        st.write("------")
-        st.subheader("Join and Leave Time Analysis")
+            st.write("----")
+            st.subheader("Live Session Metrics")
 
-        fig = px.scatter(
-            df, x="join_time", y="duration", color_discrete_sequence=["green"]
-        )
-        fig.add_trace(
-            px.scatter(
-                df, x="leave_time", y="duration", color_discrete_sequence=["red"]
-            ).data[0]
-        )
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+            col1, col2, col3 = st.columns(3)
 
-        st.write("------")
-        st.subheader("User Data")
-        df_user_data = df[["name", "user_email", "join_time", "leave_time", "duration"]]
-        df_user_data["Points"] = df_user_data["duration"].apply(
-            lambda x: 100 if x >= 2700 else round(100 * x / 2700)
-        )
-        st.dataframe(df_user_data)
+            with col1:
+                total_users_joined = df["user_email"].unique().shape[0]
+                st.metric("Total users joined", f"{total_users_joined}")
 
-        st.write("-----")
+            with col2:
+                joined_before_cutoff = df[df["join_time_only"] < "09:10:00"].shape[0]
+                st.metric(
+                    "Joined before 09:10 AM",
+                    f"{round((joined_before_cutoff/total_users_joined)*100,1)}% ({joined_before_cutoff})",
+                )
 
-        @st.cache
-        def convert_df(df_user_data):
-            # IMPORTANT: Cache the conversion to prevent computation on every rerun
-            return df_user_data.to_csv().encode("utf-8")
+            with col3:
+                ideal_duration = df[df["duration"] > 2700].shape[0]
+                st.metric(
+                    "> 45 mins duration",
+                    f"{round((ideal_duration/total_users_joined)*100,1)}% ({ideal_duration})",
+                )
 
-        csv = convert_df(df_user_data)
+            st.write("------")
+            st.subheader("Join and Leave Time Analysis")
 
-        st.download_button(
-            label="Download CSV",
-            data=csv,
-            file_name="user_data.csv",
-            mime="text/csv",
-        )
+            fig = px.scatter(
+                df,
+                x="join_time",
+                y="duration",
+                color_discrete_sequence=["green"],
+                hover_data=["name", "user_email"],
+            )
+            fig.add_trace(
+                px.scatter(
+                    df,
+                    x="leave_time",
+                    y="duration",
+                    color_discrete_sequence=["red"],
+                    hover_data=["name", "user_email"],
+                ).data[0]
+            )
+            st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-        st.write("-----")
+            st.write("------")
+            st.subheader("User Data")
+            df_user_data = df[
+                ["name", "user_email", "join_time", "leave_time", "duration"]
+            ]
+            df_user_data["Points"] = df_user_data["duration"].apply(
+                lambda x: 100 if x >= 2700 else round(100 * x / 2700)
+            )
+            st.dataframe(df_user_data)
+
+            st.write("-----")
+
+            @st.cache
+            def convert_df(df_user_data):
+                # IMPORTANT: Cache the conversion to prevent computation on every rerun
+                return df_user_data.to_csv().encode("utf-8")
+
+            csv = convert_df(df_user_data)
+
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="user_data.csv",
+                mime="text/csv",
+            )
+
+            st.write("-----")
+
+else:
+    mid_1 = st.text_input("Enter the meeting ID of the 1st class")
+    mid_2 = st.text_input("Enter the meeting ID of the 2nd class")
+
+    if st.button("Analyze drop-offs"):
+        with st.spinner("Analyzing..."):
+
+            df1 = get_attendee_data(mid_1, token)
+            df1 = df1.groupby("user_email", as_index=False).agg(
+                {
+                    "join_time": "min",
+                    "leave_time": "max",
+                    "duration": "sum",
+                    "name": "max",
+                }
+            )
+            df2 = get_attendee_data(mid_2, token)
+            df2 = df2.groupby("user_email", as_index=False).agg(
+                {
+                    "join_time": "min",
+                    "leave_time": "max",
+                    "duration": "sum",
+                    "name": "max",
+                }
+            )
+            email_1 = df1["user_email"].to_list()
+            email_2 = df2["user_email"].to_list()
+
+            dropped_off_emails = []
+
+            for i in email_1:
+                if i not in email_2:
+                    dropped_off_emails.append(i)
+
+            st.write("------")
+            st.subheader("Dropped off user Emails")
+            st.write(pd.DataFrame(dropped_off_emails, columns=["Email"]))
